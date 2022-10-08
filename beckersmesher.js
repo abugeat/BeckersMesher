@@ -73,8 +73,8 @@ function hemi_equi_LMTV(nucel) {
 
     // vr = vr/vr(nan); // need .map!
     vr = vr.map(x => x/vr[nan-1]);
-    console.log(vr); 
-    
+    console.log(vr);    
+
     // hauteur = zeros(nan,1);
     // dis = ones(nan,1);
     // lati_b_cell = zeros(nan,1);
