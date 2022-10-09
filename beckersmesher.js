@@ -1,5 +1,4 @@
-console.log("hellooooo");
-
+// B&B
 function inc(ncell) {
     // Input: number of mesh wanted
     // Output : number of cell per ring (cumulated) from zenith to horizon
@@ -56,11 +55,9 @@ function inc(ncell) {
     return nucel;
 }
 
-// function [skymesh, rzone, lati_b_cell]=Hemi_equi_LMTV(nucel)
-
 function hemi_equi_LMTV(nucel) {
     
-    let nan = nucel.length;          // number of sky rings
+    let nan = nucel.length;                             // number of sky rings
     let lat = new Array(nucel[nan-1]).fill(0);          // patch latitud
     let lon = new Array(nucel[nan-1]).fill(0);          // patch longitud 
     let rzone=new Array(nucel[nan-1]).fill([0,0,0]);    // patch direction 
@@ -73,52 +70,56 @@ function hemi_equi_LMTV(nucel) {
 
     // vr = vr/vr(nan); // need .map!
     vr = vr.map(x => x/vr[nan-1]);
-    console.log(vr);    
 
-    // hauteur = zeros(nan,1);
-    // dis = ones(nan,1);
-    // lati_b_cell = zeros(nan,1);
-    // lati_cell = zeros(nan,1);
+    let hauteur = new Array(nan).fill(0); // zeros(nan,1);
+    let dis = new Array(nan).fill(1); //ones(nan,1);
+    let lati_b_cell = new Array(nan).fill(0); //zeros(nan,1);
+    let lati_cell = new Array(nan).fill(0); // zeros(nan,1);
     
-    // for i=1:nan;
-    //     hauteur(i)=sqrt((1-vr(i)^2)^2/(2-vr(i)^2)); 
-    //     dis(i)=sqrt(hauteur(i)^2+vr(i)^2);
-    //     lati_b_cell(i)=(acos(vr(i)/dis(i)));
-    // // end
+    for (let i = 0; i<nan; i++) {
+        hauteur[i]=Math.sqrt((1-vr[i]**2)**2/(2-vr[i]**2)); 
+        dis[i]=Math.sqrt(hauteur[i]**2+vr[i]**2);
+        lati_b_cell[i]=Math.acos(vr[i]/dis[i]);
+    }
     
-    // lati_cell(1)=0; 
-    // for i=1:nan-1;
-    //     lati_cell(i+1)=(lati_b_cell(i)+lati_b_cell(i+1))/2;
-    // // end
+    lati_cell[0]=0; 
+    for (let i=0; i<(nan-1); i++) {
+        lati_cell[i+1]=(lati_b_cell[i]+lati_b_cell[i+1])/2;
+    }
     
-    // ipoi=1;
-    // for i=1:nan-1;
-    //     nmerid=nucel(i+1)-nucel(i); // nombre de cellules dans 1 anneau
-    //     longi = -pi/nmerid;
-    //     for j=1:nmerid;
-    //         ipoi=ipoi+1;
-    //         lat(ipoi)=lati_cell(i+1);
-    //         longi=longi+2*pi/nmerid;
-    //         lon(ipoi)=longi;
-    //     // end;
-    // // end;
-    
-    // // Affichage des latitudes et longitudes des cellules en radians
-    // nmesh=size(lat,1);
-    // AS = ones(nmesh,1)*(2*pi/nmesh); //Angle solide de chaque maille (supposé égaux)
-    // lat=pi/2-lat; lat(1)=0;
-    // skymesh=[lat lon AS];
-    
-    // for iv=1:nmesh // boucle sur les vecteurs en direction de chaque tuile
-    //     lat = skymesh(iv,1);
-    //     lon = skymesh(iv,2);
-    //     vect = [-sin(lon)*sin(lat)  -cos(lon)*sin(lat)  cos(lat)];
-    //     rzone(iv,:) = vect;
-    // // end
+    let ipoi=0;
+    let nmerid, longi;
+    for (let i=0; i<(nan-1); i++) {
+        nmerid = nucel[i+1]-nucel[i]; // nombre de cellules dans 1 anneau
+        longi = -Math.PI/nmerid;
+        for (let j=0; j<nmerid; j++) {
+            ipoi += 1;
+            lat[ipoi]=lati_cell[i+1];
+            longi=longi+2*Math.PI/nmerid;
+            lon[ipoi]=longi;
+        }
+    }
+        
+    // Affichage des latitudes et longitudes des cellules en radians
+    let nmesh = lat.length;
+    let as = new Array(nmesh).fill(1); //*(2*pi/nmesh); //Angle solide de chaque maille (supposé égaux)
+    as = as.map(x => x*(2*Math.PI/nmesh));
+    lat = lat.map(x => Math.PI/2 - x); //= Math.PI/2-lat; lat(1)=0;
+    lat[0] = 0;
+
+    let skymesh = new Array(nmesh).fill([0,0,0]);
+    for (let i = 0; i <nmesh; i++) {
+        skymesh[i] = [lat[i], lon[i], as[i]];
+    }
+
+    // let rzone = new Array(nmesh).fill([0,0,0]);
+    for (let iv = 0; iv<nmesh; iv++) { // boucle sur les vecteurs en direction de chaque tuile
+        // lat = skymesh(iv,1);
+        // lon = skymesh(iv,2);
+        rzone[iv] = [
+            -Math.sin(lon[iv])*Math.sin(lat[iv]),
+            -Math.cos(lon[iv])*Math.sin(lat[iv]),
+            Math.cos(lat[iv])];
+    }
         
 } 
-
-
-
-console.log(inc(200));
-console.log(hemi_equi_LMTV(inc(200)));
