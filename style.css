@@ -14,7 +14,7 @@ body {
 #content .map {
     /* fill: blue; */
     stroke: cyan;
-    stroke-width: 0.1;
+    stroke-width: 0.5;
 }
 
 #content {
