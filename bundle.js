@@ -6984,6 +6984,32 @@ function createPatch(patches, id) {
     return patchjson;
 }
 
+function getnSteps(lonStart, lonEnd, lat) {
+    let lonDif = lonEnd - lonStart;
+    let newSteps = Math.round( (Math.abs(lonDif) / 5)); //  * Math.cos(lat/180*Math.PI)  
+    console.log(newSteps);
+    return newSteps;
+}
+
+function intermediatePoints(lonStart, lonEnd, nSteps, lat) {
+    
+    // nSteps = 50;
+    let interPoints = []; 
+    if (nSteps != 0) {
+
+        let lonSteps = (lonEnd - lonStart) / nSteps;
+        interPoints = new Array(nSteps);
+        let newLon = lonStart+lonSteps;
+
+        for (let i = 0; i < nSteps; i++) {
+            interPoints[i] = [newLon, lat];
+            newLon += lonSteps;
+        }
+    }
+        
+    return interPoints;
+}
+
 function beckersGeojsonFeature(ncell) {
     let bmesh = hemi_equi_LMTV(inc(ncell));
 
@@ -6998,26 +7024,31 @@ function beckersGeojsonFeature(ncell) {
     let patch = [];
     let id;
     for (let ring = 1; ring < latb.length; ring++) {
-        
+        let nSteps = getnSteps(lonb[ring][0],-179.99,latb[ring][0]);
         // first patch
         patch = [
-            [lonb[ring][0],    latb[ring][0]],
-            [-179.99,  latb[ring][0]],
-            [-179.99,  latb[ring-1][0]],
-            [lonb[ring][0],    latb[ring-1][0]],
-            [lonb[ring][0],    latb[ring][0]]
+            [lonb[ring][0], latb[ring][0]],
+            ...intermediatePoints(lonb[ring][0],-179.99,nSteps,latb[ring][0]),
+            [-179.99,       latb[ring][0]],
+            [-179.99,       latb[ring-1][0]],
+            ...intermediatePoints(-179.99,lonb[ring][0],nSteps,latb[ring-1][0]),
+            [lonb[ring][0], latb[ring-1][0]],
+            [lonb[ring][0], latb[ring][0]]
         ];
+        console.log(patch);
         id = meshgeojson.length;
         meshgeojson.push(createPatch(patch,id));
         
         // other patches of the ring
         for (let i = 1; i < latb[ring].length; i++) { 
             patch = [
-                [lonb[ring][i],    latb[ring][0]],
-                [lonb[ring][i-1],  latb[ring][0]],
-                [lonb[ring][i-1],  latb[ring-1][0]],
-                [lonb[ring][i],    latb[ring-1][0]],
-                [lonb[ring][i],    latb[ring][0]]
+                [lonb[ring][i],     latb[ring][0]],
+                ...intermediatePoints(lonb[ring][i],lonb[ring][i-1],nSteps,latb[ring][0]),
+                [lonb[ring][i-1],   latb[ring][0]],
+                [lonb[ring][i-1],   latb[ring-1][0]],
+                ...intermediatePoints(lonb[ring][i-1],lonb[ring][i],nSteps,latb[ring-1][0]),
+                [lonb[ring][i],     latb[ring-1][0]],
+                [lonb[ring][i],     latb[ring][0]]
             ];
             id = meshgeojson.length;
 
@@ -7056,7 +7087,7 @@ gui = new GUI();
 gui.title("BeckersMesher");
 
 const folder_mesh = gui.addFolder( 'Mesh' );
-folder_mesh.add( params, 'patchnumber', 10, 5000, 1 ).name( 'Number of patches' ).onChange( resize );
+folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
 
 
 
@@ -7076,7 +7107,6 @@ function resize() {
     width = box.clientWidth;
     height = box.clientHeight;
     size = Math.min(width,height);
-    console.log(params.patchnumber);
 
     // shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
 
@@ -7144,7 +7174,9 @@ function update(geojson) {
         .attr('d', geoGenerator)
         // .attr("fill", 'rgb(100,100,100)');
         .attr("fill", function (d) {
-            return 'rgb(100,'+d.id/params.patchnumber*250+',100)';
+            // return 'rgb('+(1-(d.id/params.patchnumber))*250+','+(1-(d.id/params.patchnumber))*250+','+(1-(d.id/params.patchnumber))*250+')';
+            return 'rgb(250,250,250';
+
         });
 }
 

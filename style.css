@@ -11,15 +11,15 @@ body {
     color: #333;
 }
 
-/* #content .map {  */
+#content .map { 
     /* fill: blue; */
-    /* stroke: cyan; */
-    /* stroke-width: 0.5; */
+    stroke: black;
+    stroke-width: 1;
     /* background-color: #333; */
-/* } */
+}
 
 #content {
-    background-color: cyan;
+    background-color:white;
     position: absolute;
     top: 0;
     left: 0;
