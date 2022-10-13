@@ -113,18 +113,6 @@ function hemi_equi_LMTV(nucel) {
         skymesh[i] = [lat[i], lon[i], as[i]];
     }
 
-    // // let rzone = new Array(nmesh).fill([0,0,0]);
-    // for (let iv = 0; iv<nmesh; iv++) { // boucle sur les vecteurs en direction de chaque tuile
-    //     // lat = skymesh(iv,1);
-    //     // lon = skymesh(iv,2);
-    //     rzone[iv] = [
-    //         -Math.sin(lon[iv])*Math.sin(lat[iv]),
-    //         -Math.cos(lon[iv])*Math.sin(lat[iv]),
-    //         Math.cos(lat[iv])];
-    // }
-
-
-
     // reshape in list of list from top to bottom
     let newlat = [[lati_b_cell[0]]];
     let newlon = [[0]];
@@ -150,7 +138,7 @@ function hemi_equi_LMTV(nucel) {
     return bmesh;
 } 
 
-function createPatch(patches) {
+function createPatch(patches, id) {
     let patchjson = {
         "type": "Feature",
         "properties": {
@@ -160,7 +148,7 @@ function createPatch(patches) {
             "type": "Polygon",
             "coordinates": [patches],
         },
-        "id": Math.random(),
+        "id": parseInt(id),
     }; 
     return patchjson;
 }
@@ -170,32 +158,39 @@ function beckersGeojsonFeature(ncell) {
 
     let latb = bmesh[0];
     let lonb = bmesh[1];
-    let patches = [];
     let meshgeojson = [];
     
     // zenith circle patch
-    meshgeojson.push(createPatch(circlepolygon(latb[0][0])));
+    meshgeojson.push(createPatch(circlepolygon(latb[0][0]),0));
 
     // square patches
+    let patch = [];
+    let id;
     for (let ring = 1; ring < latb.length; ring++) {
+        
         // first patch
-        let firstsquarepatch = [];
-        firstsquarepatch.push([lonb[ring][0],    latb[ring][0]]);
-        firstsquarepatch.push([-179.99,  latb[ring][0]]);
-        firstsquarepatch.push([-179.99,  latb[ring-1][0]]);
-        firstsquarepatch.push([lonb[ring][0],    latb[ring-1][0]]);
-        firstsquarepatch.push([lonb[ring][0],    latb[ring][0]]);
-        meshgeojson.push(createPatch(firstsquarepatch));
+        patch = [
+            [lonb[ring][0],    latb[ring][0]],
+            [-179.99,  latb[ring][0]],
+            [-179.99,  latb[ring-1][0]],
+            [lonb[ring][0],    latb[ring-1][0]],
+            [lonb[ring][0],    latb[ring][0]]
+        ];
+        id = meshgeojson.length;
+        meshgeojson.push(createPatch(patch,id));
+        
         // other patches of the ring
-        let squarepatch = [];
         for (let i = 1; i < latb[ring].length; i++) { 
-            squarepatch = [];
-            squarepatch.push([lonb[ring][i],    latb[ring][0]]);
-            squarepatch.push([lonb[ring][i-1],  latb[ring][0]]);
-            squarepatch.push([lonb[ring][i-1],  latb[ring-1][0]]);
-            squarepatch.push([lonb[ring][i],    latb[ring-1][0]]);
-            squarepatch.push([lonb[ring][i],    latb[ring][0]]);
-            meshgeojson.push(createPatch(squarepatch));        
+            patch = [
+                [lonb[ring][i],    latb[ring][0]],
+                [lonb[ring][i-1],  latb[ring][0]],
+                [lonb[ring][i-1],  latb[ring-1][0]],
+                [lonb[ring][i],    latb[ring-1][0]],
+                [lonb[ring][i],    latb[ring][0]]
+            ];
+            id = meshgeojson.length;
+
+            meshgeojson.push(createPatch(patch, id));        
         }
     }
 
@@ -211,8 +206,63 @@ function beckersGeojsonFeature(ncell) {
 //
 
 import * as d3 from "d3";
+import { GUI } from 'lil-gui';
 
-let width = 300;
+let gui;
+
+let box = document.getElementById('content');
+let width = box.clientWidth;
+let height = box.clientHeight;
+let size = Math.min(width,height);
+
+let shape = document.getElementsByTagName("svg")[0];
+// shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
+
+// window.addEventListener( 'resize', resize, false );
+
+d3.select("#content").append("svg").attr("id","svg").attr("width","100%").attr("height","100%");
+d3.select("#svg").append('g').attr("class","map");
+
+
+// lil-gui
+const params = {
+    patchnumber: 1000,
+};
+ 
+gui = new GUI();
+gui.title("BeckersMesher");
+
+const folder_mesh = gui.addFolder( 'Mesh' );
+folder_mesh.add( params, 'patchnumber', 10, 5000, 1 ).name( 'Number of patches' ).onChange( resize );
+
+
+
+
+
+function resize() {
+
+    // document.getElementById("content").innerHTML += "";
+
+    d3.select('#svg').remove();
+
+    d3.select("#content").append("svg").attr("id","svg").attr("width","100%").attr("height","100%");
+    d3.select("#svg").append('g').attr("class","map");
+
+
+    box = document.getElementById('content');
+    width = box.clientWidth;
+    height = box.clientHeight;
+    size = Math.min(width,height);
+    console.log(params.patchnumber);
+
+    // shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
+
+    makegeojson();
+    update(geojson);
+
+}
+
+// let width = 300;
 
 function circle(lat) {
     let lon1 = [[-180, lat]];
@@ -234,32 +284,25 @@ function circlepolygon(lat) {
     return lon1.reverse();
 } 
 
-let geojson = {
-    "type": "FeatureCollection",
-    "features": beckersGeojsonFeature(4000),
-        // {
-        //     "type": "Feature",
-        //     "properties": {
-        //         "name": "Africa"
-        //     },
-        //     "geometry": {
-        //         "type": "Polygon",
-        //         "coordinates": [
-        //             circle(10),
-        //         ],
-        //     },
-        // },
-};
-  
-console.log(geojson);
 
-// let projection = d3.geoAzimuthalEqualArea()
-let projection = d3.geoOrthographic()
+let geojson;
+
+function makegeojson() {
+    geojson = {
+        "type": "FeatureCollection",
+        "features": beckersGeojsonFeature(params.patchnumber),
+    };
+}
+
+
+  
+let projection = d3.geoAzimuthalEqualArea()
+// let projection = d3.geoOrthographic()
 // let projection = d3.geoAzimuthalEquidistant()
 // let projection = d3.geoStereographic()
-    .scale(width / 3)
-    .rotate([0, -30])
-    .translate([width / 2, width / 2]);
+    .scale(size / 3)
+    .rotate([0, -90])
+    .translate([width / 2, height / 2]);
     // .clipExtent([0,0],[30,30]);
     // .translate([200, 150]);
 
@@ -267,6 +310,19 @@ let geoGenerator = d3.geoPath()
     .projection(projection);
   
 function update(geojson) {
+
+//     projection = d3.geoAzimuthalEqualArea()
+// // let projection = d3.geoOrthographic()
+// // let projection = d3.geoAzimuthalEquidistant()
+// // let projection = d3.geoStereographic()
+//         .scale(size / 3)
+//         .rotate([0, -90])
+//         .translate([width / 2, height / 2]);
+    
+    
+//     geoGenerator = d3.geoPath()
+//         .projection(projection);
+    //shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
     let u = d3.select('#content g.map')
         .selectAll('path')
         .data(geojson.features)
@@ -276,152 +332,9 @@ function update(geojson) {
         .attr('d', geoGenerator)
         // .attr("fill", 'rgb(100,100,100)');
         .attr("fill", function (d) {
-            return 'rgb(100,'+d.id*250+',100)';
+            return 'rgb(100,'+d.id/params.patchnumber*250+',100)';
         });
 }
-  
+
+makegeojson();
 update(geojson);
-/////////////////////////
-
-// let projection = d3.geoAzimuthalEqualArea()
-//     .reflectY(true)
-//     .scale((width - 120) * 0.2)
-//     .clipExtent([[0, 0], [width, height]])
-//     .rotate([0, -90])
-//     .translate([width / 2, height / 2])
-//     .precision(0.1);
-
-
-
-// const xAxis = (g) => {
-//     g
-//     .call(g => g.append("g")
-//         .attr("stroke", "currentColor")
-//     .selectAll("line")
-//     .data(d3.range(360))
-//     .join("line")
-//         .datum(d => [
-//             projection([d, 0]),
-//             projection([d, d % 10 ? -1 : -2])
-//         ])
-//         .attr("x1", ([[x1]]) => x1)
-//         .attr("x2", ([, [x2]]) => x2)
-//         .attr("y1", ([[, y1]]) => y1)
-//         .attr("y2", ([, [, y2]]) => y2))
-//     .call(g => g.append("g")
-//         .selectAll("text")
-//         .data(d3.range(0, 360, 10))
-//         .join("text")
-//             .attr("dy", "0.35em")
-//             .text(d => d === 0 ? "N" : d === 90 ? "E" : d === 180 ? "S" : d === 270 ? "W" : `${d}°`)
-//             .attr("font-size", d => d % 90 ? null : 14)
-//             .attr("font-weight", d => d % 90 ? null : "bold")
-//             .datum(d => projection([d, -4]))
-//             .attr("x", ([x]) => x)
-//             .attr("y", ([, y]) => y));
-// };
-
-// const yAxis = (g) => {
-//     g
-//     .call(g => g.append("g")
-//         .selectAll("text")
-//         .data(d3.range(5, 91, 5)) // every 10°
-//         .join("text")
-//             .attr("dy", "0.35em")
-//             .text(d => `${d}°`)
-//             .datum(d => projection([180, d]))
-//             .attr("x", ([x]) => x)
-//             .attr("y", ([, y]) => y));
-// };
-
-// let path = d3.geoPath(projection);
-
-
-
-
-
-// // function chart() {
-// const cx = width / 2;
-// const cy = height / 2;
-
-// const svg = d3.create("svg")
-//     .attr("viewBox", [0, 0, width, height])
-//     .attr("font-family", "sans-serif")
-//     .attr("font-size", 10)
-//     .attr("text-anchor", "middle")
-//     .attr("fill", "currentColor")
-//     .style("margin", "0 -14px")
-//     .style("display", "block");
-
-// svg.append("path")
-//     .attr("d", path(graticule))
-//     .attr("fill", "none")
-//     .attr("stroke", "currentColor")
-//     .attr("stroke-opacity", 0.2);
-
-// svg.append("path")
-//     .attr("d", path(outline))
-//     .attr("fill", "none")
-//     .attr("stroke", "currentColor");
-
-// svg.append("g")
-//     .call(xAxis);
-
-// svg.append("g")
-//     .call(yAxis);
-
-// const sunPath = svg.append("path")
-//     .attr("fill", "none")
-//     .attr("stroke", "red")
-//     .attr("stroke-width", 2);
-
-// const hour = svg.append("g")
-//     .selectAll("g")
-//     .data(d3.range(24))
-//     .join("g");
-
-// hour.append("circle")
-//     .attr("fill", "black")
-//     .attr("r", 2);
-
-// hour.append("text")
-//     .attr("dy", "-0.4em")
-//     .attr("stroke", "white")
-//     .attr("stroke-width", 4)
-//     .attr("stroke-linejoin", "round")
-//     .attr("fill", "none")
-//     .clone(true)
-//     .attr("stroke", null)
-//     .attr("fill", "black");
-
-// function update(date) {
-//     const start = d3.utcHour.offset(solar.noon(date), -12);
-//     const end = d3.utcHour.offset(start, 24);
-//     sunPath.attr("d", path({type: "LineString", coordinates: d3.utcMinutes(start, end).map(solar.position)}));
-//     hour.data(d3.utcHours(start, end));
-//     hour.attr("transform", d => `translate(${projection(solar.position(d))})`);
-//     hour.select("text:first-of-type").text(formatHour);
-//     hour.select("text:last-of-type").text(formatHour);
-// }
-  
-//     // return Object.assign(svg.node(), {update});
-// // }
-
-// // update = chart.update(date);
-
-// chart.update(date);
-
-
-
-
-
-// let projection = d3.geoAzimuthalEqualArea()
-//     .reflectY(true)
-//     .scale((width - 120) * 0.2)
-//     .clipExtent([[0, 0], [width, height]])
-//     .rotate([0, -90])
-//     .translate([width / 2, height / 2])
-//     .precision(0.1);
-
-// let path = d3.geoPath(projection);
-
