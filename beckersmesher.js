@@ -159,6 +159,26 @@ function getnSteps(lonStart, lonEnd, lat) {
     return newSteps;
 }
 
+function circle(lat) {
+    let lon1 = [[-180, lat]];
+    for (let i=0; i<145; i++) {
+        let lon = -180 + i * 2.5;
+        lon1.push([lon, lat]);
+    }
+    return lon1.reverse();
+} 
+
+function circlepolygon(lat) {
+    let lon1 = [[-180, lat]];
+    let lon;
+    for (let i=0; i<145; i++) {
+        lon = -180 + i * 2.5;
+        lon1.push([lon, lat]);
+    }
+    lon1.push([-180, lat]);
+    return lon1.reverse();
+} 
+
 function intermediatePoints(lonStart, lonEnd, nSteps, lat) {
     
     // nSteps = 50;
@@ -235,52 +255,56 @@ function beckersGeojsonFeature(ncell) {
 //
 
 import * as d3 from "d3";
+import * as d3geoprojection from "d3-geo-projection";
 import { GUI } from 'lil-gui';
 
+
 let gui;
+let width, height, size, box;
+let projection, geoGenerator;
+let geojson;
+let scalefactor;
 
-let box = document.getElementById('content');
-let width = window.innerWidth;
-let height = window.innerHeight;
-let size = Math.min(width,height);
-box.style.width = size+"px"; 
-box.style.height = size+"px";
-// let content = document.getElementsByTagName("content")[0];
-// content.clientWidth = 
-
-
-let shape = document.getElementsByTagName("svg")[0];
-// shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
-
-// window.addEventListener( 'resize', resize, false );
-
-d3.select("#content").append("svg").attr("id","svg").attr("width","100%").attr("height","100%");
-d3.select("#svg").append('g').attr("class","map");
-
-
-// lil-gui
 const params = {
     patchnumber: 1000,
+    projChoice: 'Equal area',
     saveSvg: () => saveSvg(),
 };
+
+const projs = [
+    'Equal area',
+    'Stereographic',
+    'Equidistant',
+    'Orthographic',
+    'Perspective',
+    'Equirectangular',
+    'Mollweide',
+];
+
+
+function init() {
+    
+    // lil-gui
+    gui = new GUI();
+    gui.title("BeckersMesher");
+    const folder_mesh = gui.addFolder( 'Mesh' );
+    folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
+    folder_mesh.add( params, 'projChoice', projs ).name( 'Projection' ).onChange( resize );
+    folder_mesh.add( params, 'saveSvg').name( 'Save as .SVG' );
+
+    getShape();
+
+    setProjandgeoGene();
+
+    makegeojson();
+
+    update(geojson);
+}
  
-gui = new GUI();
-gui.title("BeckersMesher");
-
-const folder_mesh = gui.addFolder( 'Mesh' );
-folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
-folder_mesh.add( params, "saveSvg").name( 'Save as .SVG' );
-
-
-function resize() {
-
-    // document.getElementById("content").innerHTML += "";
-
-    d3.select('#svg').remove();
-
+function getShape() {
+    // create svg in div content
     d3.select("#content").append("svg").attr("id","svg").attr("width","100%").attr("height","100%");
     d3.select("#svg").append('g').attr("class","map");
-
 
     box = document.getElementById('content');
     width = window.innerWidth;
@@ -288,49 +312,71 @@ function resize() {
     size = Math.min(width,height);
     box.style.width = size+"px"; 
     box.style.height = size+"px";
-
-    // projection = d3.geoAzimuthalEqualArea()
-    // let projection = d3.geoOrthographic()
-    // let projection = d3.geoAzimuthalEquidistant()
-    let projection = d3.geoStereographic()
-        .scale(size / 3)
-        .rotate([0, -90])
-        .translate([size / 2, size / 2]);
-
-    geoGenerator = d3.geoPath()
-        .projection(projection);
-
-    // shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
-
-    makegeojson();
-    update(geojson);
-
 }
 
-// let width = 300;
-
-function circle(lat) {
-    let lon1 = [[-180, lat]];
-    for (let i=0; i<145; i++) {
-        let lon = -180 + i * 2.5;
-        lon1.push([lon, lat]);
+function setProjandgeoGene() {
+    switch (params.projChoice) {
+        case 'Equal area':
+            projection = d3.geoAzimuthalEqualArea()
+                .scale(size / 3 ) //.scale(size/(1.414213*2))
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;
+        case 'Stereographic':
+            scalefactor = d3.geoAzimuthalEqualAreaRaw(0,Math.PI/2)[1] / d3.geoStereographicRaw(0,Math.PI/2)[1];
+            projection = d3.geoStereographic()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;
+        case 'Equidistant':
+            scalefactor = d3.geoAzimuthalEqualAreaRaw(0,Math.PI/2)[1] / d3.geoAzimuthalEquidistantRaw(0,Math.PI/2)[1];
+            projection = d3.geoAzimuthalEquidistant()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;
+        case 'Orthographic':
+            scalefactor = d3.geoAzimuthalEqualAreaRaw(0,Math.PI/2)[1] / d3.geoOrthographicRaw(0,Math.PI/2)[1];
+            projection = d3.geoOrthographic()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;   
+        case 'Perspective':
+            scalefactor = d3.geoAzimuthalEqualAreaRaw(0,Math.PI/2)[1] / d3.geoOrthographicRaw(0,Math.PI/2)[1];
+            projection = d3.geoOrthographic()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -30])
+                .translate([size / 2, size / 2]);
+            break;   
+        case 'Equirectangular':
+            scalefactor = d3.geoAzimuthalEqualAreaRaw(0,Math.PI/2)[1] / d3.geoEquirectangularRaw(0,Math.PI/2)[1];
+            projection = d3.geoEquirectangular()
+                .scale(size / 3 * scalefactor / 2)
+                .rotate([0, 0]) 
+                .translate([size / 2, size / 2]);
+            break;   
+        case 'Mollweide':
+            scalefactor = d3.geoAzimuthalEqualAreaRaw(0,Math.PI/2)[1] / d3geoprojection.geoMollweideRaw(0,Math.PI/2)[1];
+            projection = d3geoprojection.geoMollweide()
+                .scale(size / 3 * scalefactor / 2 )
+                .rotate([0, 0]) 
+                .translate([size / 2, size / 2]);
+            break;
     }
-    return lon1.reverse();
-} 
+    
+    geoGenerator = d3.geoPath()
+        .projection(projection);
+}
 
-function circlepolygon(lat) {
-    let lon1 = [[-180, lat]];
-    let lon;
-    for (let i=0; i<145; i++) {
-        lon = -180 + i * 2.5;
-        lon1.push([lon, lat]);
-    }
-    lon1.push([-180, lat]);
-    return lon1.reverse();
-} 
-
-
-let geojson;
+function resize() {
+    d3.select('#svg').remove();
+    getShape();
+    setProjandgeoGene();
+    makegeojson();
+    update(geojson);
+}
 
 function makegeojson() {
     geojson = {
@@ -338,38 +384,8 @@ function makegeojson() {
         "features": beckersGeojsonFeature(params.patchnumber),
     };
 }
-
-
-  
-let projection = d3.geoAzimuthalEqualArea()
-// let projection = d3.geoOrthographic()
-// let projection = d3.geoAzimuthalEquidistant()
-// let projection = d3.geoStereographic()
-    .scale(size / 3)
-    .rotate([0, -90])
-    .translate([size / 2, size / 2]);
-    // .clipExtent([0,0],[30,30]);
-    // .translate([200, 150]);
-
-
-
-let geoGenerator = d3.geoPath()
-    .projection(projection);
   
 function update(geojson) {
-
-//     projection = d3.geoAzimuthalEqualArea()
-// // let projection = d3.geoOrthographic()
-// // let projection = d3.geoAzimuthalEquidistant()
-// // let projection = d3.geoStereographic()
-//         .scale(size / 3)
-//         .rotate([0, -90])
-//         .translate([width / 2, height / 2]);
-    
-    
-//     geoGenerator = d3.geoPath()
-//         .projection(projection);
-    //shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
     let u = d3.select('#content g.map')
         .selectAll('path')
         .data(geojson.features)
@@ -386,29 +402,11 @@ function update(geojson) {
         });
 }
 
-makegeojson();
-update(geojson);
-
 function saveSvg() {
     let svgEl = document.getElementById("svg");
     let name = 'beckersmesh.svg';
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
-    
-    // let svg = document.getElementById("svg").cloneNode(true);
-    // document.body.appendChild(svg);
-    // const g = svg.querySelector('g'); // select the parent g
-    // g.setAttribute('transform', ''); // clean transform
-    // svg.setAttribute('width', g.getBBox().width); // set svg to be the g dimensions
-    // svg.setAttribute('height', g.getBBox().height);
-    // const svgAsXML = (new XMLSerializer).serializeToString(svg);
-    // const svgData = `data:image/svg+xml,${encodeURIComponent(svgAsXML)}`;
-    // const link = document.createElement("a");
-    // document.body.appendChild(link); 
-    // link.setAttribute("href", svgData);
-    // link.setAttribute("download", "image.svg");
-    // link.click();
-    
     var preface = '<?xml version="1.0" standalone="no"?>\r\n';
     var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml; charset=utf-8"});
     var svgUrl = URL.createObjectURL(svgBlob);
@@ -419,3 +417,5 @@ function saveSvg() {
     downloadLink.click();
     document.body.removeChild(downloadLink);
 }
+
+init();

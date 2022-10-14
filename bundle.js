@@ -1835,7 +1835,7 @@ function schedule(node, name, id, index, group, timing) {
   });
 }
 
-function init(node, id) {
+function init$1(node, id) {
   var schedule = get(node, id);
   if (schedule.state > CREATED) throw new Error("too late; already scheduled");
   return schedule;
@@ -2192,13 +2192,13 @@ function transition_attrTween(name, value) {
 
 function delayFunction(id, value) {
   return function() {
-    init(this, id).delay = +value.apply(this, arguments);
+    init$1(this, id).delay = +value.apply(this, arguments);
   };
 }
 
 function delayConstant(id, value) {
   return value = +value, function() {
-    init(this, id).delay = value;
+    init$1(this, id).delay = value;
   };
 }
 
@@ -2303,7 +2303,7 @@ function start(name) {
 }
 
 function onFunction(id, name, listener) {
-  var on0, on1, sit = start(name) ? init : set;
+  var on0, on1, sit = start(name) ? init$1 : set;
   return function() {
     var schedule = sit(this, id),
         on = schedule.on;
@@ -2672,30 +2672,30 @@ function selection_transition(name) {
 selection.prototype.interrupt = selection_interrupt;
 selection.prototype.transition = selection_transition;
 
-var epsilon = 1e-6;
+var epsilon$1 = 1e-6;
 var epsilon2 = 1e-12;
-var pi = Math.PI;
-var halfPi = pi / 2;
-var quarterPi = pi / 4;
-var tau = pi * 2;
+var pi$1 = Math.PI;
+var halfPi$1 = pi$1 / 2;
+var quarterPi = pi$1 / 4;
+var tau = pi$1 * 2;
 
-var degrees = 180 / pi;
-var radians = pi / 180;
+var degrees = 180 / pi$1;
+var radians = pi$1 / 180;
 
-var abs = Math.abs;
+var abs$1 = Math.abs;
 var atan = Math.atan;
 var atan2 = Math.atan2;
-var cos = Math.cos;
-var sin = Math.sin;
+var cos$1 = Math.cos;
+var sin$1 = Math.sin;
 var sign = Math.sign || function(x) { return x > 0 ? 1 : x < 0 ? -1 : 0; };
-var sqrt = Math.sqrt;
+var sqrt$1 = Math.sqrt;
 
 function acos(x) {
-  return x > 1 ? 0 : x < -1 ? pi : Math.acos(x);
+  return x > 1 ? 0 : x < -1 ? pi$1 : Math.acos(x);
 }
 
-function asin(x) {
-  return x > 1 ? halfPi : x < -1 ? -halfPi : Math.asin(x);
+function asin$1(x) {
+  return x > 1 ? halfPi$1 : x < -1 ? -halfPi$1 : Math.asin(x);
 }
 
 function noop() {}
@@ -2771,12 +2771,12 @@ function geoStream(object, stream) {
 }
 
 function spherical(cartesian) {
-  return [atan2(cartesian[1], cartesian[0]), asin(cartesian[2])];
+  return [atan2(cartesian[1], cartesian[0]), asin$1(cartesian[2])];
 }
 
 function cartesian(spherical) {
-  var lambda = spherical[0], phi = spherical[1], cosPhi = cos(phi);
-  return [cosPhi * cos(lambda), cosPhi * sin(lambda), sin(phi)];
+  var lambda = spherical[0], phi = spherical[1], cosPhi = cos$1(phi);
+  return [cosPhi * cos$1(lambda), cosPhi * sin$1(lambda), sin$1(phi)];
 }
 
 function cartesianDot(a, b) {
@@ -2798,7 +2798,7 @@ function cartesianScale(vector, k) {
 
 // TODO return d
 function cartesianNormalizeInPlace(d) {
-  var l = sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+  var l = sqrt$1(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
   d[0] /= l, d[1] /= l, d[2] /= l;
 }
 
@@ -2816,7 +2816,7 @@ function compose(a, b) {
 }
 
 function rotationIdentity(lambda, phi) {
-  return [abs(lambda) > pi ? lambda + Math.round(-lambda / tau) * tau : lambda, phi];
+  return [abs$1(lambda) > pi$1 ? lambda + Math.round(-lambda / tau) * tau : lambda, phi];
 }
 
 rotationIdentity.invert = rotationIdentity;
@@ -2830,7 +2830,7 @@ function rotateRadians(deltaLambda, deltaPhi, deltaGamma) {
 
 function forwardRotationLambda(deltaLambda) {
   return function(lambda, phi) {
-    return lambda += deltaLambda, [lambda > pi ? lambda - tau : lambda < -pi ? lambda + tau : lambda, phi];
+    return lambda += deltaLambda, [lambda > pi$1 ? lambda - tau : lambda < -pi$1 ? lambda + tau : lambda, phi];
   };
 }
 
@@ -2841,32 +2841,32 @@ function rotationLambda(deltaLambda) {
 }
 
 function rotationPhiGamma(deltaPhi, deltaGamma) {
-  var cosDeltaPhi = cos(deltaPhi),
-      sinDeltaPhi = sin(deltaPhi),
-      cosDeltaGamma = cos(deltaGamma),
-      sinDeltaGamma = sin(deltaGamma);
+  var cosDeltaPhi = cos$1(deltaPhi),
+      sinDeltaPhi = sin$1(deltaPhi),
+      cosDeltaGamma = cos$1(deltaGamma),
+      sinDeltaGamma = sin$1(deltaGamma);
 
   function rotation(lambda, phi) {
-    var cosPhi = cos(phi),
-        x = cos(lambda) * cosPhi,
-        y = sin(lambda) * cosPhi,
-        z = sin(phi),
+    var cosPhi = cos$1(phi),
+        x = cos$1(lambda) * cosPhi,
+        y = sin$1(lambda) * cosPhi,
+        z = sin$1(phi),
         k = z * cosDeltaPhi + x * sinDeltaPhi;
     return [
       atan2(y * cosDeltaGamma - k * sinDeltaGamma, x * cosDeltaPhi - z * sinDeltaPhi),
-      asin(k * cosDeltaGamma + y * sinDeltaGamma)
+      asin$1(k * cosDeltaGamma + y * sinDeltaGamma)
     ];
   }
 
   rotation.invert = function(lambda, phi) {
-    var cosPhi = cos(phi),
-        x = cos(lambda) * cosPhi,
-        y = sin(lambda) * cosPhi,
-        z = sin(phi),
+    var cosPhi = cos$1(phi),
+        x = cos$1(lambda) * cosPhi,
+        y = sin$1(lambda) * cosPhi,
+        z = sin$1(phi),
         k = z * cosDeltaGamma - y * sinDeltaGamma;
     return [
       atan2(y * cosDeltaGamma + z * sinDeltaGamma, x * cosDeltaPhi + k * sinDeltaPhi),
-      asin(k * cosDeltaPhi - x * sinDeltaPhi)
+      asin$1(k * cosDeltaPhi - x * sinDeltaPhi)
     ];
   };
 
@@ -2876,8 +2876,8 @@ function rotationPhiGamma(deltaPhi, deltaGamma) {
 // Generates a circle centered at [0°, 0°], with a given radius and precision.
 function circleStream(stream, radius, delta, direction, t0, t1) {
   if (!delta) return;
-  var cosRadius = cos(radius),
-      sinRadius = sin(radius),
+  var cosRadius = cos$1(radius),
+      sinRadius = sin$1(radius),
       step = direction * delta;
   if (t0 == null) {
     t0 = radius + direction * tau;
@@ -2888,7 +2888,7 @@ function circleStream(stream, radius, delta, direction, t0, t1) {
     if (direction > 0 ? t0 < t1 : t0 > t1) t0 += direction * tau;
   }
   for (var point, t = t0; direction > 0 ? t > t1 : t < t1; t -= step) {
-    point = spherical([cosRadius, -sinRadius * cos(t), -sinRadius * sin(t)]);
+    point = spherical([cosRadius, -sinRadius * cos$1(t), -sinRadius * sin$1(t)]);
     stream.point(point[0], point[1]);
   }
 }
@@ -2898,7 +2898,7 @@ function circleRadius(cosRadius, point) {
   point = cartesian(point), point[0] -= cosRadius;
   cartesianNormalizeInPlace(point);
   var radius = acos(-point[1]);
-  return ((-point[2] < 0 ? -radius : radius) + tau - epsilon) % tau;
+  return ((-point[2] < 0 ? -radius : radius) + tau - epsilon$1) % tau;
 }
 
 function clipBuffer() {
@@ -2925,7 +2925,7 @@ function clipBuffer() {
 }
 
 function pointEqual(a, b) {
-  return abs(a[0] - b[0]) < epsilon && abs(a[1] - b[1]) < epsilon;
+  return abs$1(a[0] - b[0]) < epsilon$1 && abs$1(a[1] - b[1]) < epsilon$1;
 }
 
 function Intersection(point, points, other, entry) {
@@ -2958,7 +2958,7 @@ function clipRejoin(segments, compareIntersection, startInside, interpolate, str
         return;
       }
       // handle degenerate cases by moving the point
-      p1[0] += 2 * epsilon;
+      p1[0] += 2 * epsilon$1;
     }
 
     subject.push(x = new Intersection(p0, segment, null, true));
@@ -3030,21 +3030,21 @@ function link(array) {
 }
 
 function longitude(point) {
-  return abs(point[0]) <= pi ? point[0] : sign(point[0]) * ((abs(point[0]) + pi) % tau - pi);
+  return abs$1(point[0]) <= pi$1 ? point[0] : sign(point[0]) * ((abs$1(point[0]) + pi$1) % tau - pi$1);
 }
 
 function polygonContains(polygon, point) {
   var lambda = longitude(point),
       phi = point[1],
-      sinPhi = sin(phi),
-      normal = [sin(lambda), -cos(lambda), 0],
+      sinPhi = sin$1(phi),
+      normal = [sin$1(lambda), -cos$1(lambda), 0],
       angle = 0,
       winding = 0;
 
   var sum = new Adder();
 
-  if (sinPhi === 1) phi = halfPi + epsilon;
-  else if (sinPhi === -1) phi = -halfPi - epsilon;
+  if (sinPhi === 1) phi = halfPi$1 + epsilon$1;
+  else if (sinPhi === -1) phi = -halfPi$1 - epsilon$1;
 
   for (var i = 0, n = polygon.length; i < n; ++i) {
     if (!(m = (ring = polygon[i]).length)) continue;
@@ -3053,22 +3053,22 @@ function polygonContains(polygon, point) {
         point0 = ring[m - 1],
         lambda0 = longitude(point0),
         phi0 = point0[1] / 2 + quarterPi,
-        sinPhi0 = sin(phi0),
-        cosPhi0 = cos(phi0);
+        sinPhi0 = sin$1(phi0),
+        cosPhi0 = cos$1(phi0);
 
     for (var j = 0; j < m; ++j, lambda0 = lambda1, sinPhi0 = sinPhi1, cosPhi0 = cosPhi1, point0 = point1) {
       var point1 = ring[j],
           lambda1 = longitude(point1),
           phi1 = point1[1] / 2 + quarterPi,
-          sinPhi1 = sin(phi1),
-          cosPhi1 = cos(phi1),
+          sinPhi1 = sin$1(phi1),
+          cosPhi1 = cos$1(phi1),
           delta = lambda1 - lambda0,
           sign = delta >= 0 ? 1 : -1,
           absDelta = sign * delta,
-          antimeridian = absDelta > pi,
+          antimeridian = absDelta > pi$1,
           k = sinPhi0 * sinPhi1;
 
-      sum.add(atan2(k * sign * sin(absDelta), cosPhi0 * cosPhi1 + k * cos(absDelta)));
+      sum.add(atan2(k * sign * sin$1(absDelta), cosPhi0 * cosPhi1 + k * cos$1(absDelta)));
       angle += antimeridian ? delta + sign * tau : delta;
 
       // Are the longitudes either side of the point’s meridian (lambda),
@@ -3078,7 +3078,7 @@ function polygonContains(polygon, point) {
         cartesianNormalizeInPlace(arc);
         var intersection = cartesianCross(normal, arc);
         cartesianNormalizeInPlace(intersection);
-        var phiArc = (antimeridian ^ delta >= 0 ? -1 : 1) * asin(intersection[2]);
+        var phiArc = (antimeridian ^ delta >= 0 ? -1 : 1) * asin$1(intersection[2]);
         if (phi > phiArc || phi === phiArc && (arc[0] || arc[1])) {
           winding += antimeridian ^ delta >= 0 ? 1 : -1;
         }
@@ -3097,7 +3097,7 @@ function polygonContains(polygon, point) {
   // from the point to the South pole.  If it is zero, then the point is the
   // same side as the South pole.
 
-  return (angle < -epsilon || angle < epsilon && sum < -epsilon2) ^ (winding & 1);
+  return (angle < -epsilon$1 || angle < epsilon$1 && sum < -epsilon2) ^ (winding & 1);
 }
 
 function clip(pointVisible, clipLine, interpolate, start) {
@@ -3222,15 +3222,15 @@ function validSegment(segment) {
 // Intersections are sorted along the clip edge. For both antimeridian cutting
 // and circle clipping, the same comparison is used.
 function compareIntersection(a, b) {
-  return ((a = a.x)[0] < 0 ? a[1] - halfPi - epsilon : halfPi - a[1])
-       - ((b = b.x)[0] < 0 ? b[1] - halfPi - epsilon : halfPi - b[1]);
+  return ((a = a.x)[0] < 0 ? a[1] - halfPi$1 - epsilon$1 : halfPi$1 - a[1])
+       - ((b = b.x)[0] < 0 ? b[1] - halfPi$1 - epsilon$1 : halfPi$1 - b[1]);
 }
 
 var clipAntimeridian = clip(
   function() { return true; },
   clipAntimeridianLine,
   clipAntimeridianInterpolate,
-  [-pi, -halfPi]
+  [-pi$1, -halfPi$1]
 );
 
 // Takes a line and cuts into visible segments. Return values: 0 - there were
@@ -3248,19 +3248,19 @@ function clipAntimeridianLine(stream) {
       clean = 1;
     },
     point: function(lambda1, phi1) {
-      var sign1 = lambda1 > 0 ? pi : -pi,
-          delta = abs(lambda1 - lambda0);
-      if (abs(delta - pi) < epsilon) { // line crosses a pole
-        stream.point(lambda0, phi0 = (phi0 + phi1) / 2 > 0 ? halfPi : -halfPi);
+      var sign1 = lambda1 > 0 ? pi$1 : -pi$1,
+          delta = abs$1(lambda1 - lambda0);
+      if (abs$1(delta - pi$1) < epsilon$1) { // line crosses a pole
+        stream.point(lambda0, phi0 = (phi0 + phi1) / 2 > 0 ? halfPi$1 : -halfPi$1);
         stream.point(sign0, phi0);
         stream.lineEnd();
         stream.lineStart();
         stream.point(sign1, phi0);
         stream.point(lambda1, phi0);
         clean = 0;
-      } else if (sign0 !== sign1 && delta >= pi) { // line crosses antimeridian
-        if (abs(lambda0 - sign0) < epsilon) lambda0 -= sign0 * epsilon; // handle degeneracies
-        if (abs(lambda1 - sign1) < epsilon) lambda1 -= sign1 * epsilon;
+      } else if (sign0 !== sign1 && delta >= pi$1) { // line crosses antimeridian
+        if (abs$1(lambda0 - sign0) < epsilon$1) lambda0 -= sign0 * epsilon$1; // handle degeneracies
+        if (abs$1(lambda1 - sign1) < epsilon$1) lambda1 -= sign1 * epsilon$1;
         phi0 = clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1);
         stream.point(sign0, phi0);
         stream.lineEnd();
@@ -3284,10 +3284,10 @@ function clipAntimeridianLine(stream) {
 function clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1) {
   var cosPhi0,
       cosPhi1,
-      sinLambda0Lambda1 = sin(lambda0 - lambda1);
-  return abs(sinLambda0Lambda1) > epsilon
-      ? atan((sin(phi0) * (cosPhi1 = cos(phi1)) * sin(lambda1)
-          - sin(phi1) * (cosPhi0 = cos(phi0)) * sin(lambda0))
+      sinLambda0Lambda1 = sin$1(lambda0 - lambda1);
+  return abs$1(sinLambda0Lambda1) > epsilon$1
+      ? atan((sin$1(phi0) * (cosPhi1 = cos$1(phi1)) * sin$1(lambda1)
+          - sin$1(phi1) * (cosPhi0 = cos$1(phi0)) * sin$1(lambda0))
           / (cosPhi0 * cosPhi1 * sinLambda0Lambda1))
       : (phi0 + phi1) / 2;
 }
@@ -3295,18 +3295,18 @@ function clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1) {
 function clipAntimeridianInterpolate(from, to, direction, stream) {
   var phi;
   if (from == null) {
-    phi = direction * halfPi;
-    stream.point(-pi, phi);
+    phi = direction * halfPi$1;
+    stream.point(-pi$1, phi);
     stream.point(0, phi);
-    stream.point(pi, phi);
-    stream.point(pi, 0);
-    stream.point(pi, -phi);
+    stream.point(pi$1, phi);
+    stream.point(pi$1, 0);
+    stream.point(pi$1, -phi);
     stream.point(0, -phi);
-    stream.point(-pi, -phi);
-    stream.point(-pi, 0);
-    stream.point(-pi, phi);
-  } else if (abs(from[0] - to[0]) > epsilon) {
-    var lambda = from[0] < to[0] ? pi : -pi;
+    stream.point(-pi$1, -phi);
+    stream.point(-pi$1, 0);
+    stream.point(-pi$1, phi);
+  } else if (abs$1(from[0] - to[0]) > epsilon$1) {
+    var lambda = from[0] < to[0] ? pi$1 : -pi$1;
     phi = direction * lambda / 2;
     stream.point(-lambda, phi);
     stream.point(0, phi);
@@ -3317,17 +3317,17 @@ function clipAntimeridianInterpolate(from, to, direction, stream) {
 }
 
 function clipCircle(radius) {
-  var cr = cos(radius),
+  var cr = cos$1(radius),
       delta = 6 * radians,
       smallRadius = cr > 0,
-      notHemisphere = abs(cr) > epsilon; // TODO optimise for this common case
+      notHemisphere = abs$1(cr) > epsilon$1; // TODO optimise for this common case
 
   function interpolate(from, to, direction, stream) {
     circleStream(stream, radius, delta, direction, from, to);
   }
 
   function visible(lambda, phi) {
-    return cos(lambda) * cos(phi) > cr;
+    return cos$1(lambda) * cos$1(phi) > cr;
   }
 
   // Takes a line and cuts into visible segments. Return values used for polygon
@@ -3351,7 +3351,7 @@ function clipCircle(radius) {
             v = visible(lambda, phi),
             c = smallRadius
               ? v ? 0 : code(lambda, phi)
-              : v ? code(lambda + (lambda < 0 ? pi : -pi), phi) : 0;
+              : v ? code(lambda + (lambda < 0 ? pi$1 : -pi$1), phi) : 0;
         if (!point0 && (v00 = v0 = v)) stream.lineStart();
         if (v !== v0) {
           point2 = intersect(point0, point1);
@@ -3439,7 +3439,7 @@ function clipCircle(radius) {
 
     if (t2 < 0) return;
 
-    var t = sqrt(t2),
+    var t = sqrt$1(t2),
         q = cartesianScale(u, (-w - t) / uu);
     cartesianAddInPlace(q, A);
     q = spherical(q);
@@ -3456,17 +3456,17 @@ function clipCircle(radius) {
     if (lambda1 < lambda0) z = lambda0, lambda0 = lambda1, lambda1 = z;
 
     var delta = lambda1 - lambda0,
-        polar = abs(delta - pi) < epsilon,
-        meridian = polar || delta < epsilon;
+        polar = abs$1(delta - pi$1) < epsilon$1,
+        meridian = polar || delta < epsilon$1;
 
     if (!polar && phi1 < phi0) z = phi0, phi0 = phi1, phi1 = z;
 
     // Check that the first point is between a and b.
     if (meridian
         ? polar
-          ? phi0 + phi1 > 0 ^ q[1] < (abs(q[0] - lambda0) < epsilon ? phi0 : phi1)
+          ? phi0 + phi1 > 0 ^ q[1] < (abs$1(q[0] - lambda0) < epsilon$1 ? phi0 : phi1)
           : phi0 <= q[1] && q[1] <= phi1
-        : delta > pi ^ (lambda0 <= q[0] && q[0] <= lambda1)) {
+        : delta > pi$1 ^ (lambda0 <= q[0] && q[0] <= lambda1)) {
       var q1 = cartesianScale(u, (-w + t) / uu);
       cartesianAddInPlace(q1, A);
       return [q, spherical(q1)];
@@ -3476,7 +3476,7 @@ function clipCircle(radius) {
   // Generates a 4-bit vector representing the location of a point relative to
   // the small circle's bounding box.
   function code(lambda, phi) {
-    var r = smallRadius ? radius : pi - radius,
+    var r = smallRadius ? radius : pi$1 - radius,
         code = 0;
     if (lambda < -r) code |= 1; // left
     else if (lambda > r) code |= 2; // right
@@ -3485,7 +3485,7 @@ function clipCircle(radius) {
     return code;
   }
 
-  return clip(visible, clipLine, interpolate, smallRadius ? [0, -radius] : [-pi, radius - pi]);
+  return clip(visible, clipLine, interpolate, smallRadius ? [0, -radius] : [-pi$1, radius - pi$1]);
 }
 
 function clipLine(a, b, x0, y0, x1, y1) {
@@ -3572,9 +3572,9 @@ function clipRectangle(x0, y0, x1, y1) {
   }
 
   function corner(p, direction) {
-    return abs(p[0] - x0) < epsilon ? direction > 0 ? 0 : 3
-        : abs(p[0] - x1) < epsilon ? direction > 0 ? 2 : 1
-        : abs(p[1] - y0) < epsilon ? direction > 0 ? 1 : 0
+    return abs$1(p[0] - x0) < epsilon$1 ? direction > 0 ? 0 : 3
+        : abs$1(p[0] - x1) < epsilon$1 ? direction > 0 ? 2 : 1
+        : abs$1(p[1] - y0) < epsilon$1 ? direction > 0 ? 1 : 0
         : direction > 0 ? 3 : 2; // abs(p[1] - y1) < epsilon
   }
 
@@ -3730,7 +3730,7 @@ var areaStream = {
   },
   polygonEnd: function() {
     areaStream.lineStart = areaStream.lineEnd = areaStream.point = noop;
-    areaSum.add(abs(areaRingSum));
+    areaSum.add(abs$1(areaRingSum));
     areaRingSum = new Adder();
   },
   result: function() {
@@ -3844,7 +3844,7 @@ function centroidPointFirstLine(x, y) {
 }
 
 function centroidPointLine(x, y) {
-  var dx = x - x0$1, dy = y - y0$1, z = sqrt(dx * dx + dy * dy);
+  var dx = x - x0$1, dy = y - y0$1, z = sqrt$1(dx * dx + dy * dy);
   X1 += z * (x0$1 + x) / 2;
   Y1 += z * (y0$1 + y) / 2;
   Z1 += z;
@@ -3871,7 +3871,7 @@ function centroidPointFirstRing(x, y) {
 function centroidPointRing(x, y) {
   var dx = x - x0$1,
       dy = y - y0$1,
-      z = sqrt(dx * dx + dy * dy);
+      z = sqrt$1(dx * dx + dy * dy);
 
   X1 += z * (x0$1 + x) / 2;
   Y1 += z * (y0$1 + y) / 2;
@@ -3965,7 +3965,7 @@ function lengthPointFirst(x, y) {
 
 function lengthPoint(x, y) {
   x0 -= x, y0 -= y;
-  lengthSum.add(sqrt(x0 * x0 + y0 * y0));
+  lengthSum.add(sqrt$1(x0 * x0 + y0 * y0));
   x0 = x, y0 = y;
 }
 
@@ -4151,7 +4151,7 @@ function fitHeight(projection, height, object) {
 }
 
 var maxDepth = 16, // maximum depth of subdivision
-    cosMinDistance = cos(30 * radians); // cos(minimum angular distance)
+    cosMinDistance = cos$1(30 * radians); // cos(minimum angular distance)
 
 function resample(project, delta2) {
   return +delta2 ? resample$1(project, delta2) : resampleNone(project);
@@ -4176,9 +4176,9 @@ function resample$1(project, delta2) {
       var a = a0 + a1,
           b = b0 + b1,
           c = c0 + c1,
-          m = sqrt(a * a + b * b + c * c),
-          phi2 = asin(c /= m),
-          lambda2 = abs(abs(c) - 1) < epsilon || abs(lambda0 - lambda1) < epsilon ? (lambda0 + lambda1) / 2 : atan2(b, a),
+          m = sqrt$1(a * a + b * b + c * c),
+          phi2 = asin$1(c /= m),
+          lambda2 = abs$1(abs$1(c) - 1) < epsilon$1 || abs$1(lambda0 - lambda1) < epsilon$1 ? (lambda0 + lambda1) / 2 : atan2(b, a),
           p = project(lambda2, phi2),
           x2 = p[0],
           y2 = p[1],
@@ -4186,7 +4186,7 @@ function resample$1(project, delta2) {
           dy2 = y2 - y0,
           dz = dy * dx2 - dx * dy2;
       if (dz * dz / d2 > delta2 // perpendicular projected distance
-          || abs((dx * dx2 + dy * dy2) / d2 - 0.5) > 0.3 // midpoint close to an end
+          || abs$1((dx * dx2 + dy * dy2) / d2 - 0.5) > 0.3 // midpoint close to an end
           || a0 * a1 + b0 * b1 + c0 * c1 < cosMinDistance) { // angular distance
         resampleLineTo(x0, y0, lambda0, a0, b0, c0, x2, y2, lambda2, a /= m, b /= m, c, depth, stream);
         stream.point(x2, y2);
@@ -4277,8 +4277,8 @@ function scaleTranslate(k, dx, dy, sx, sy) {
 
 function scaleTranslateRotate(k, dx, dy, sx, sy, alpha) {
   if (!alpha) return scaleTranslate(k, dx, dy, sx, sy);
-  var cosAlpha = cos(alpha),
-      sinAlpha = sin(alpha),
+  var cosAlpha = cos$1(alpha),
+      sinAlpha = sin$1(alpha),
       a = cosAlpha * k,
       b = sinAlpha * k,
       ai = cosAlpha / k,
@@ -4375,7 +4375,7 @@ function projectionMutator(projectAt) {
   };
 
   projection.precision = function(_) {
-    return arguments.length ? (projectResample = resample(projectTransform, delta2 = _ * _), reset()) : sqrt(delta2);
+    return arguments.length ? (projectResample = resample(projectTransform, delta2 = _ * _), reset()) : sqrt$1(delta2);
   };
 
   projection.fitExtent = function(extent, object) {
@@ -4418,36 +4418,36 @@ function projectionMutator(projectAt) {
 
 function azimuthalRaw(scale) {
   return function(x, y) {
-    var cx = cos(x),
-        cy = cos(y),
+    var cx = cos$1(x),
+        cy = cos$1(y),
         k = scale(cx * cy);
         if (k === Infinity) return [2, 0];
     return [
-      k * cy * sin(x),
-      k * sin(y)
+      k * cy * sin$1(x),
+      k * sin$1(y)
     ];
   }
 }
 
 function azimuthalInvert(angle) {
   return function(x, y) {
-    var z = sqrt(x * x + y * y),
+    var z = sqrt$1(x * x + y * y),
         c = angle(z),
-        sc = sin(c),
-        cc = cos(c);
+        sc = sin$1(c),
+        cc = cos$1(c);
     return [
       atan2(x * sc, z * cc),
-      asin(z && y * sc / z)
+      asin$1(z && y * sc / z)
     ];
   }
 }
 
 var azimuthalEqualAreaRaw = azimuthalRaw(function(cxcy) {
-  return sqrt(2 / (1 + cxcy));
+  return sqrt$1(2 / (1 + cxcy));
 });
 
 azimuthalEqualAreaRaw.invert = azimuthalInvert(function(z) {
-  return 2 * asin(z / 2);
+  return 2 * asin$1(z / 2);
 });
 
 function azimuthalEqualArea() {
@@ -4456,9 +4456,46 @@ function azimuthalEqualArea() {
       .clipAngle(180 - 1e-3);
 }
 
+var azimuthalEquidistantRaw = azimuthalRaw(function(c) {
+  return (c = acos(c)) && c / sin$1(c);
+});
+
+azimuthalEquidistantRaw.invert = azimuthalInvert(function(z) {
+  return z;
+});
+
+function azimuthalEquidistant() {
+  return projection$1(azimuthalEquidistantRaw)
+      .scale(79.4188)
+      .clipAngle(180 - 1e-3);
+}
+
+function equirectangularRaw(lambda, phi) {
+  return [lambda, phi];
+}
+
+equirectangularRaw.invert = equirectangularRaw;
+
+function geoEquirectangular() {
+  return projection$1(equirectangularRaw)
+      .scale(152.63);
+}
+
+function orthographicRaw(x, y) {
+  return [cos$1(y) * sin$1(x), sin$1(y)];
+}
+
+orthographicRaw.invert = azimuthalInvert(asin$1);
+
+function geoOrthographic() {
+  return projection$1(orthographicRaw)
+      .scale(249.5)
+      .clipAngle(90 + epsilon$1);
+}
+
 function stereographicRaw(x, y) {
-  var cy = cos(y), k = 1 + cos(x) * cy;
-  return [cy * sin(x) / k, sin(y) / k];
+  var cy = cos$1(y), k = 1 + cos$1(x) * cy;
+  return [cy * sin$1(x) / k, sin$1(y) / k];
 }
 
 stereographicRaw.invert = azimuthalInvert(function(z) {
@@ -4517,6 +4554,50 @@ Transform.prototype = {
 new Transform(1, 0, 0);
 
 Transform.prototype;
+
+var abs = Math.abs;
+var cos = Math.cos;
+var sin = Math.sin;
+
+var epsilon = 1e-6;
+var pi = Math.PI;
+var halfPi = pi / 2;
+var sqrt2 = sqrt(2);
+
+function asin(x) {
+  return x > 1 ? halfPi : x < -1 ? -halfPi : Math.asin(x);
+}
+
+function sqrt(x) {
+  return x > 0 ? Math.sqrt(x) : 0;
+}
+
+function mollweideBromleyTheta(cp, phi) {
+  var cpsinPhi = cp * sin(phi), i = 30, delta;
+  do phi -= delta = (phi + sin(phi) - cpsinPhi) / (1 + cos(phi));
+  while (abs(delta) > epsilon && --i > 0);
+  return phi / 2;
+}
+
+function mollweideBromleyRaw(cx, cy, cp) {
+
+  function forward(lambda, phi) {
+    return [cx * lambda * cos(phi = mollweideBromleyTheta(cp, phi)), cy * sin(phi)];
+  }
+
+  forward.invert = function(x, y) {
+    return y = asin(y / cy), [x / (cx * cos(y)), asin((2 * y + sin(2 * y)) / cp)];
+  };
+
+  return forward;
+}
+
+var mollweideRaw = mollweideBromleyRaw(sqrt2 / halfPi, sqrt2, pi);
+
+function mollweide() {
+  return projection$1(mollweideRaw)
+      .scale(169.529);
+}
 
 /**
  * lil-gui
@@ -7005,6 +7086,17 @@ function getnSteps(lonStart, lonEnd, lat) {
     return newSteps;
 }
 
+function circlepolygon(lat) {
+    let lon1 = [[-180, lat]];
+    let lon;
+    for (let i=0; i<145; i++) {
+        lon = -180 + i * 2.5;
+        lon1.push([lon, lat]);
+    }
+    lon1.push([-180, lat]);
+    return lon1.reverse();
+} 
+
 function intermediatePoints(lonStart, lonEnd, nSteps, lat) {
     
     // nSteps = 50;
@@ -7075,50 +7167,53 @@ function beckersGeojsonFeature(ncell) {
 
 }
 
+
 let gui;
+let width, height, size, box;
+let projection, geoGenerator;
+let geojson;
+let scalefactor;
 
-let box = document.getElementById('content');
-let width = window.innerWidth;
-let height = window.innerHeight;
-let size = Math.min(width,height);
-box.style.width = size+"px"; 
-box.style.height = size+"px";
-// let content = document.getElementsByTagName("content")[0];
-// content.clientWidth = 
-
-
-document.getElementsByTagName("svg")[0];
-// shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
-
-// window.addEventListener( 'resize', resize, false );
-
-select("#content").append("svg").attr("id","svg").attr("width","100%").attr("height","100%");
-select("#svg").append('g').attr("class","map");
-
-
-// lil-gui
 const params = {
     patchnumber: 1000,
+    projChoice: 'Equal area',
     saveSvg: () => saveSvg(),
 };
+
+const projs = [
+    'Equal area',
+    'Stereographic',
+    'Equidistant',
+    'Orthographic',
+    'Perspective',
+    'Equirectangular',
+    'Mollweide',
+];
+
+
+function init() {
+    
+    // lil-gui
+    gui = new GUI();
+    gui.title("BeckersMesher");
+    const folder_mesh = gui.addFolder( 'Mesh' );
+    folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
+    folder_mesh.add( params, 'projChoice', projs ).name( 'Projection' ).onChange( resize );
+    folder_mesh.add( params, 'saveSvg').name( 'Save as .SVG' );
+
+    getShape();
+
+    setProjandgeoGene();
+
+    makegeojson();
+
+    update(geojson);
+}
  
-gui = new GUI();
-gui.title("BeckersMesher");
-
-const folder_mesh = gui.addFolder( 'Mesh' );
-folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
-folder_mesh.add( params, "saveSvg").name( 'Save as .SVG' );
-
-
-function resize() {
-
-    // document.getElementById("content").innerHTML += "";
-
-    select('#svg').remove();
-
+function getShape() {
+    // create svg in div content
     select("#content").append("svg").attr("id","svg").attr("width","100%").attr("height","100%");
     select("#svg").append('g').attr("class","map");
-
 
     box = document.getElementById('content');
     width = window.innerWidth;
@@ -7126,38 +7221,71 @@ function resize() {
     size = Math.min(width,height);
     box.style.width = size+"px"; 
     box.style.height = size+"px";
-
-    // projection = d3.geoAzimuthalEqualArea()
-    // let projection = d3.geoOrthographic()
-    // let projection = d3.geoAzimuthalEquidistant()
-    let projection = stereographic()
-        .scale(size / 3)
-        .rotate([0, -90])
-        .translate([size / 2, size / 2]);
-
-    geoGenerator = index()
-        .projection(projection);
-
-    // shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
-
-    makegeojson();
-    update(geojson);
-
 }
 
-function circlepolygon(lat) {
-    let lon1 = [[-180, lat]];
-    let lon;
-    for (let i=0; i<145; i++) {
-        lon = -180 + i * 2.5;
-        lon1.push([lon, lat]);
+function setProjandgeoGene() {
+    switch (params.projChoice) {
+        case 'Equal area':
+            projection = azimuthalEqualArea()
+                .scale(size / 3 ) //.scale(size/(1.414213*2))
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;
+        case 'Stereographic':
+            scalefactor = azimuthalEqualAreaRaw(0,Math.PI/2)[1] / stereographicRaw(0,Math.PI/2)[1];
+            projection = stereographic()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;
+        case 'Equidistant':
+            scalefactor = azimuthalEqualAreaRaw(0,Math.PI/2)[1] / azimuthalEquidistantRaw(0,Math.PI/2)[1];
+            projection = azimuthalEquidistant()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;
+        case 'Orthographic':
+            scalefactor = azimuthalEqualAreaRaw(0,Math.PI/2)[1] / orthographicRaw(0,Math.PI/2)[1];
+            projection = geoOrthographic()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -90])
+                .translate([size / 2, size / 2]);
+            break;   
+        case 'Perspective':
+            scalefactor = azimuthalEqualAreaRaw(0,Math.PI/2)[1] / orthographicRaw(0,Math.PI/2)[1];
+            projection = geoOrthographic()
+                .scale(size / 3 * scalefactor)
+                .rotate([0, -30])
+                .translate([size / 2, size / 2]);
+            break;   
+        case 'Equirectangular':
+            scalefactor = azimuthalEqualAreaRaw(0,Math.PI/2)[1] / equirectangularRaw(0,Math.PI/2)[1];
+            projection = geoEquirectangular()
+                .scale(size / 3 * scalefactor / 2)
+                .rotate([0, 0]) 
+                .translate([size / 2, size / 2]);
+            break;   
+        case 'Mollweide':
+            scalefactor = azimuthalEqualAreaRaw(0,Math.PI/2)[1] / mollweideRaw(0,Math.PI/2)[1];
+            projection = mollweide()
+                .scale(size / 3 * scalefactor / 2 )
+                .rotate([0, 0]) 
+                .translate([size / 2, size / 2]);
+            break;
     }
-    lon1.push([-180, lat]);
-    return lon1.reverse();
-} 
+    
+    geoGenerator = index()
+        .projection(projection);
+}
 
-
-let geojson;
+function resize() {
+    select('#svg').remove();
+    getShape();
+    setProjandgeoGene();
+    makegeojson();
+    update(geojson);
+}
 
 function makegeojson() {
     geojson = {
@@ -7165,38 +7293,8 @@ function makegeojson() {
         "features": beckersGeojsonFeature(params.patchnumber),
     };
 }
-
-
-  
-let projection = azimuthalEqualArea()
-// let projection = d3.geoOrthographic()
-// let projection = d3.geoAzimuthalEquidistant()
-// let projection = d3.geoStereographic()
-    .scale(size / 3)
-    .rotate([0, -90])
-    .translate([size / 2, size / 2]);
-    // .clipExtent([0,0],[30,30]);
-    // .translate([200, 150]);
-
-
-
-let geoGenerator = index()
-    .projection(projection);
   
 function update(geojson) {
-
-//     projection = d3.geoAzimuthalEqualArea()
-// // let projection = d3.geoOrthographic()
-// // let projection = d3.geoAzimuthalEquidistant()
-// // let projection = d3.geoStereographic()
-//         .scale(size / 3)
-//         .rotate([0, -90])
-//         .translate([width / 2, height / 2]);
-    
-    
-//     geoGenerator = d3.geoPath()
-//         .projection(projection);
-    //shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
     select('#content g.map')
         .selectAll('path')
         .data(geojson.features)
@@ -7213,29 +7311,11 @@ function update(geojson) {
         });
 }
 
-makegeojson();
-update(geojson);
-
 function saveSvg() {
     let svgEl = document.getElementById("svg");
     let name = 'beckersmesh.svg';
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
-    
-    // let svg = document.getElementById("svg").cloneNode(true);
-    // document.body.appendChild(svg);
-    // const g = svg.querySelector('g'); // select the parent g
-    // g.setAttribute('transform', ''); // clean transform
-    // svg.setAttribute('width', g.getBBox().width); // set svg to be the g dimensions
-    // svg.setAttribute('height', g.getBBox().height);
-    // const svgAsXML = (new XMLSerializer).serializeToString(svg);
-    // const svgData = `data:image/svg+xml,${encodeURIComponent(svgAsXML)}`;
-    // const link = document.createElement("a");
-    // document.body.appendChild(link); 
-    // link.setAttribute("href", svgData);
-    // link.setAttribute("download", "image.svg");
-    // link.click();
-    
     var preface = '<?xml version="1.0" standalone="no"?>\r\n';
     var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml; charset=utf-8"});
     var svgUrl = URL.createObjectURL(svgBlob);
@@ -7246,3 +7326,5 @@ function saveSvg() {
     downloadLink.click();
     document.body.removeChild(downloadLink);
 }
+
+init();
