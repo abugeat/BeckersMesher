@@ -7178,6 +7178,9 @@ const params = {
     patchnumber: 1000,
     projChoice: 'Equal area',
     saveSvg: () => saveSvg(),
+    article: () => window.open('https://doi.org/10.1016/j.comgeo.2012.01.011', '_blank').focus(), 
+    source: () => window.open('https://github.com/abugeat/BeckersMesher', '_blank').focus(),
+    me: () => window.open('https://www.linkedin.com/in/antoine-bugeat-452167123/', '_blank').focus(),
 };
 
 const projs = [
@@ -7190,7 +7193,6 @@ const projs = [
     'Mollweide',
 ];
 
-
 function init() {
     
     // lil-gui
@@ -7200,6 +7202,10 @@ function init() {
     folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
     folder_mesh.add( params, 'projChoice', projs ).name( 'Projection' ).onChange( resize );
     folder_mesh.add( params, 'saveSvg').name( 'Save as .SVG' );
+    const folder_about = gui.addFolder( 'About' );
+    folder_about.add( params, 'article').name( 'Beckers partition' );
+    folder_about.add( params, 'source').name( 'Source code' );
+    folder_about.add( params, 'me').name( 'Me' );
 
     getShape();
 
