@@ -7024,8 +7024,6 @@ function intermediatePoints(lonStart, lonEnd, nSteps, lat) {
     return interPoints;
 }
 
-console.log(Math.floor(0.5));
-
 function beckersGeojsonFeature(ncell) {
     let bmesh = hemi_equi_LMTV(inc(ncell));
 
