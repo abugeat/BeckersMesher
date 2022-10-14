@@ -7306,7 +7306,7 @@ function update(geojson) {
         // .attr("fill", 'rgb(100,100,100)');
         .attr("fill", function (d) {
             // return 'rgb('+(1-(d.id/params.patchnumber))*255+','+(1-(d.id/params.patchnumber))*255+','+(1-(d.id/params.patchnumber))*255+')';
-            return 'rgb(255,255,255)';
+            return 'rgba(255,255,255,0)';
 
         });
 }
