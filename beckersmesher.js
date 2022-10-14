@@ -155,8 +155,7 @@ function createPatch(patches, id) {
 
 function getnSteps(lonStart, lonEnd, lat) {
     let lonDif = lonEnd - lonStart;
-    let newSteps = Math.round( (Math.abs(lonDif) / 5)); //  * Math.cos(lat/180*Math.PI)  
-    console.log(newSteps);
+    let newSteps = Math.round( (Math.abs(lonDif) / 2.5)); //  * Math.cos(lat/180*Math.PI)  
     return newSteps;
 }
 
@@ -178,6 +177,8 @@ function intermediatePoints(lonStart, lonEnd, nSteps, lat) {
         
     return interPoints;
 }
+
+console.log(Math.floor(0.5));
 
 function beckersGeojsonFeature(ncell) {
     let bmesh = hemi_equi_LMTV(inc(ncell));
@@ -204,7 +205,6 @@ function beckersGeojsonFeature(ncell) {
             [lonb[ring][0], latb[ring-1][0]],
             [lonb[ring][0], latb[ring][0]]
         ];
-        console.log(patch);
         id = meshgeojson.length;
         meshgeojson.push(createPatch(patch,id));
         
@@ -242,9 +242,14 @@ import { GUI } from 'lil-gui';
 let gui;
 
 let box = document.getElementById('content');
-let width = box.clientWidth;
-let height = box.clientHeight;
+let width = window.innerWidth;
+let height = window.innerHeight;
 let size = Math.min(width,height);
+box.style.width = size+"px"; 
+box.style.height = size+"px";
+// let content = document.getElementsByTagName("content")[0];
+// content.clientWidth = 
+
 
 let shape = document.getElementsByTagName("svg")[0];
 // shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
@@ -258,6 +263,7 @@ d3.select("#svg").append('g').attr("class","map");
 // lil-gui
 const params = {
     patchnumber: 1000,
+    saveSvg: () => saveSvg(),
 };
  
 gui = new GUI();
@@ -265,9 +271,7 @@ gui.title("BeckersMesher");
 
 const folder_mesh = gui.addFolder( 'Mesh' );
 folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
-
-
-
+folder_mesh.add( params, "saveSvg").name( 'Save as .SVG' );
 
 
 function resize() {
@@ -281,9 +285,22 @@ function resize() {
 
 
     box = document.getElementById('content');
-    width = box.clientWidth;
-    height = box.clientHeight;
+    width = window.innerWidth;
+    height = window.innerHeight;
     size = Math.min(width,height);
+    box.style.width = size+"px"; 
+    box.style.height = size+"px";
+
+    // projection = d3.geoAzimuthalEqualArea()
+    // let projection = d3.geoOrthographic()
+    // let projection = d3.geoAzimuthalEquidistant()
+    let projection = d3.geoStereographic()
+        .scale(size / 3)
+        .rotate([0, -90])
+        .translate([size / 2, size / 2]);
+
+    geoGenerator = d3.geoPath()
+        .projection(projection);
 
     // shape.setAttribute("viewBox", "0 0 " + parseInt(width) + " " + parseInt(height));
 
@@ -332,9 +349,11 @@ let projection = d3.geoAzimuthalEqualArea()
 // let projection = d3.geoStereographic()
     .scale(size / 3)
     .rotate([0, -90])
-    .translate([width / 2, height / 2]);
+    .translate([size / 2, size / 2]);
     // .clipExtent([0,0],[30,30]);
     // .translate([200, 150]);
+
+
 
 let geoGenerator = d3.geoPath()
     .projection(projection);
@@ -360,13 +379,45 @@ function update(geojson) {
         .enter()
         .append('path')
         .attr('d', geoGenerator)
+        .attr('stroke', 'black')
         // .attr("fill", 'rgb(100,100,100)');
         .attr("fill", function (d) {
-            // return 'rgb('+(1-(d.id/params.patchnumber))*250+','+(1-(d.id/params.patchnumber))*250+','+(1-(d.id/params.patchnumber))*250+')';
-            return 'rgb(250,250,250';
+            // return 'rgb('+(1-(d.id/params.patchnumber))*255+','+(1-(d.id/params.patchnumber))*255+','+(1-(d.id/params.patchnumber))*255+')';
+            return 'rgb(255,255,255)';
 
         });
 }
 
 makegeojson();
 update(geojson);
+
+function saveSvg() {
+    let svgEl = document.getElementById("svg");
+    let name = 'beckersmesh.svg';
+    svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var svgData = svgEl.outerHTML;
+    
+    // let svg = document.getElementById("svg").cloneNode(true);
+    // document.body.appendChild(svg);
+    // const g = svg.querySelector('g'); // select the parent g
+    // g.setAttribute('transform', ''); // clean transform
+    // svg.setAttribute('width', g.getBBox().width); // set svg to be the g dimensions
+    // svg.setAttribute('height', g.getBBox().height);
+    // const svgAsXML = (new XMLSerializer).serializeToString(svg);
+    // const svgData = `data:image/svg+xml,${encodeURIComponent(svgAsXML)}`;
+    // const link = document.createElement("a");
+    // document.body.appendChild(link); 
+    // link.setAttribute("href", svgData);
+    // link.setAttribute("download", "image.svg");
+    // link.click();
+    
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml; charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = name;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
