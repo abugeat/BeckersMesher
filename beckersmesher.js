@@ -57,11 +57,11 @@ function inc(ncell) {
 
 function hemi_equi_LMTV(nucel) {
     
-    let nan = nucel.length;                             // number of sky rings
-    let lat = new Array(nucel[nan-1]).fill(0);          // patch latitud
-    let latb = new Array(nucel[nan-1]).fill(0);
-    let lon = new Array(nucel[nan-1]).fill(0);          // patch longitud 
-    let rzone=new Array(nucel[nan-1]).fill([0,0,0]);    // patch direction 
+    let nan =       nucel.length;                             // number of sky rings
+    let lat =       new Array(nucel[nan-1]).fill(0);          // patch latitud
+    let latb =      new Array(nucel[nan-1]).fill(0);
+    let lon =       new Array(nucel[nan-1]).fill(0);          // patch longitud 
+    let directions =new Array(nucel[nan-1]).fill([0,0,0]);    // patch direction 
     
     // tracé des segments de méridiens
     let vr = new Array(nan).fill(1); // ones(nan,1);
@@ -133,7 +133,17 @@ function hemi_equi_LMTV(nucel) {
         newlat[i] = newlat[i].map(x => x*180/Math.PI);
     }
 
-    let bmesh = [newlat, newlon];
+    // direction of each patch (middle) xyz x:east y:north z:up
+    for (let i = 0; i <nmesh; i++) {
+        directions[i] = [-Math.sin(lon[i])*Math.cos(lat[i]),  Math.cos(lon[i])*Math.cos(lat[i]),  Math.sin(lat[i])];
+    }
+
+    let bmesh = {
+        lat: newlat,
+        lon: newlon,
+        directions: directions,
+        nucel: nucel,
+    };
 
     return bmesh;
 } 
@@ -201,8 +211,8 @@ function intermediatePoints(lonStart, lonEnd, nSteps, lat) {
 function beckersGeojsonFeature(ncell) {
     let bmesh = hemi_equi_LMTV(inc(ncell));
 
-    let latb = bmesh[0];
-    let lonb = bmesh[1];
+    let latb = bmesh.lat;
+    let lonb = bmesh.lon;
     let meshgeojson = [];
     
     // zenith circle patch
@@ -251,7 +261,6 @@ function beckersGeojsonFeature(ncell) {
 
 
 
-
 //
 
 import * as d3 from "d3";
@@ -270,6 +279,7 @@ const params = {
     patchnumber: 1000,
     projChoice: 'Equal area',
     saveSvg: () => saveSvg(),
+    exportData: () => exportData(),
     article: () => window.open('https://doi.org/10.1016/j.comgeo.2012.01.011', '_blank').focus(), 
     source: () => window.open('https://github.com/abugeat/BeckersMesher', '_blank').focus(),
     me: () => window.open('https://www.linkedin.com/in/antoine-bugeat-452167123/', '_blank').focus(),
@@ -295,6 +305,7 @@ function init() {
     folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
     folder_mesh.add( params, 'projChoice', projs ).name( 'Projection' ).onChange( resize );
     folder_mesh.add( params, 'saveSvg').name( 'Save as .SVG' );
+    folder_mesh.add( params, 'exportData').name( 'Export data' );
     const folder_about = gui.addFolder( 'About' );
     folder_about.add( params, 'article').name( 'Beckers partition' );
     folder_about.add( params, 'source').name( 'Source code' );
@@ -423,7 +434,7 @@ function update(geojson) {
 
 function saveSvg() {
     let svgEl = document.getElementById("svg");
-    let name = 'beckersmesh.svg';
+    let name = 'beckersmesh_abugeat.svg';
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
     var preface = '<?xml version="1.0" standalone="no"?>\r\n';
@@ -435,6 +446,16 @@ function saveSvg() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+}
+
+function exportData() {
+    let bmesh = hemi_equi_LMTV(inc(params.patchnumber));
+    var a = document.body.appendChild(
+        document.createElement("a")
+    );
+    a.download = "beckersmesh_abugeat.txt";
+    a.href = "data:text/plain;base64," + btoa(JSON.stringify(bmesh));
+    a.click();
 }
 
 init();
