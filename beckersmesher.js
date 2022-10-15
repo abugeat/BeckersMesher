@@ -266,6 +266,7 @@ let geojson;
 let scalefactor;
 
 const params = {
+    info: () => info(),
     patchnumber: 1000,
     projChoice: 'Equal area',
     saveSvg: () => saveSvg(),
@@ -289,6 +290,7 @@ function init() {
     // lil-gui
     gui = new GUI();
     gui.title("BeckersMesher");
+    gui.add( params, 'info' ).name( 'Info' );
     const folder_mesh = gui.addFolder( 'Mesh' );
     folder_mesh.add( params, 'patchnumber', 10, 10000, 1 ).name( 'Number of patches' ).onChange( resize );
     folder_mesh.add( params, 'projChoice', projs ).name( 'Projection' ).onChange( resize );
@@ -297,6 +299,7 @@ function init() {
     folder_about.add( params, 'article').name( 'Beckers partition' );
     folder_about.add( params, 'source').name( 'Source code' );
     folder_about.add( params, 'me').name( 'Me' );
+    gui.open(true);
 
     getShape();
 
@@ -306,12 +309,22 @@ function init() {
 
     update(geojson);
 }
+
+function info() {
+    let infodiv = document.getElementById('info');
+    if (infodiv.style.display == 'flex') {
+        infodiv.style.display = 'none';
+    } else {
+        infodiv.style.display = 'flex';
+    }
+}
  
 function getShape() {
     // create svg in div content
     d3.select("#content").append("svg").attr("id","svg").attr("width","100%").attr("height","100%");
     d3.select("#svg").append('g').attr("class","map");
 
+    // resize div content and get size
     box = document.getElementById('content');
     width = window.innerWidth;
     height = window.innerHeight;
