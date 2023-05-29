@@ -22,10 +22,10 @@ body {
     background-color: #333;
 } */
 
-#content {
+/* #content {
     width: 100px;
     height: 100px;
-}
+} */
 
 #info {
     position: absolute;
@@ -50,6 +50,8 @@ body {
 }
 
 .lil-gui {
-	--title-background-color: cornflowerblue;
-	--title-text-color: #1f1f1f;
+	--title-background-color: #6495ed;
+	/* --title-text-color: #1f1f1f; */
+    --font-family: monospace;
+	--font-family-mono: monospace;
 }
